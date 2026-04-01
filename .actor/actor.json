@@ -1,0 +1,9 @@
+{
+    "actorSpecification": 1,
+    "name": "linkedin-company-scraper",
+    "title": "LinkedIn Company People Scraper",
+    "description": "Scrapes total member count and top 5 locations from LinkedIn company People tab using Playwright.",
+    "version": "1.0",
+    "buildTag": "latest",
+    "dockerfile": "./Dockerfile"
+}

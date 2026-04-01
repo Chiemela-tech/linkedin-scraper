@@ -6,9 +6,9 @@
         "companyUrl": {
             "title": "Company URL or Slug",
             "type": "string",
-            "description": "Enter the LinkedIn company URL (e.g., https://www.linkedin.com/company/microsoft/) or just the slug (e.g., accenture).",
+            "description": "Enter the LinkedIn company URL (e.g., https://www.linkedin.com/company/google/) or just the slug (e.g., google).",
             "editor": "textfield",
-            "prefill": "microsoft"
+            "prefill": "google"
         },
         "li_at": {
             "title": "LinkedIn li_at Cookie",
