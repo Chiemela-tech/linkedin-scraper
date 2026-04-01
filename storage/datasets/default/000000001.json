@@ -1,0 +1,28 @@
+{
+	"company": "microsoft",
+	"totalMembers": 228255,
+	"topLocations": [
+		{
+			"location": "United States",
+			"count": 101128
+		},
+		{
+			"location": "Washington, United States",
+			"count": 58332
+		},
+		{
+			"location": "Greater Seattle Area",
+			"count": 57561
+		},
+		{
+			"location": "India",
+			"count": 34542
+		},
+		{
+			"location": "Redmond, WA",
+			"count": 19872
+		}
+	],
+	"url": "https://www.linkedin.com/company/microsoft/people/",
+	"timestamp": "2026-04-01T04:12:52.404Z"
+}

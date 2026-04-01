@@ -23,11 +23,13 @@ Actor.main(async () => {
 
     // 3. Launch browser
     const browser = await chromium.launch({
-        headless: true, // Use headless for performance, but can be disabled for debugging
+        headless: true,
     });
     
-    // Create a context with the session cookie
-    const context = await browser.newContext();
+    // Create a context with a realistic User-Agent and the session cookie
+    const context = await browser.newContext({
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    });
     await context.addCookies([
         {
             name: 'li_at',
@@ -44,33 +46,61 @@ Actor.main(async () => {
 
     try {
         // 4. Navigate to the People tab
-        await page.goto(peopleUrl, { waitUntil: 'networkidle', timeout: maxWaitMs });
+        await page.goto(peopleUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        console.log('Page loaded (DOM content). Current URL:', page.url());
 
-        // Wait for the member count to appear
-        const countSelector = 'h2.t-20.t-black.t-bold';
-        await page.waitForSelector(countSelector, { timeout: 15000 });
+        // Wait for the member count to appear - using a more resilient selector pattern
+        // Sometimes LinkedIn uses different classes, so we'll look for text containing 'associated members'
+        try {
+            await page.waitForFunction(() => {
+                const headers = Array.from(document.querySelectorAll('h2, span, div'));
+                return headers.some(h => h.textContent.includes('associated members'));
+            }, { timeout: 30000 });
+            console.log('Member count section found!');
+        } catch (e) {
+            console.log('Member count not found via function. Taking debug screenshot...');
+            await page.screenshot({ path: 'debug_failure.png' });
+            throw new Error(`Timeout waiting for member count. Screenshot saved to debug_failure.png. Current URL: ${page.url()}`);
+        }
 
         // 5. Extract member count
-        const totalMembersRaw = await page.textContent(countSelector);
-        const totalMembers = parseInt(totalMembersRaw.replace(/[^0-9]/g, ''), 10);
+        const totalMembers = await page.evaluate(() => {
+            // Find the specific header that mentions "associated members"
+            const headers = Array.from(document.querySelectorAll('h2, span, strong, div'));
+            const memberHeader = headers.find(h => h.textContent.includes('associated members') && h.textContent.length < 100);
+            
+            if (!memberHeader) return 0;
+            
+            // Extract the number specifically from the text (e.g., "668,874 associated members")
+            const match = memberHeader.textContent.match(/[\d,.]+/);
+            return match ? parseInt(match[0].replace(/[,.]/g, ''), 10) : 0;
+        });
 
         console.log(`Extracted total members: ${totalMembers}`);
 
         // 6. Extract top 5 locations
-        // We wait for the location elements
         const locationSelector = '.org-people-bar-graph-element';
         await page.waitForSelector(locationSelector, { timeout: 10000 });
 
-        const locations = await page.$$eval(locationSelector, (elements) => {
-            return elements.slice(0, 5).map((el) => {
-                const countStr = el.querySelector('.org-people-bar-graph-element__amount')?.textContent || '0';
-                const location = el.querySelector('.org-people-bar-graph-element__category')?.textContent || 'Unknown';
+        const locations = await page.evaluate((selector) => {
+            const items = Array.from(document.querySelectorAll(selector));
+            
+            return items.slice(0, 5).map((el) => {
+                // The count is almost always in a <strong> tag or the first piece of text with numbers
+                const strongEl = el.querySelector('strong');
+                const countText = strongEl ? strongEl.textContent.trim() : (el.textContent.match(/[\d,.]+/) || ['0'])[0];
+                
+                // The location name is usually in a span or just the remaining text
+                // We'll look for the element that DOESN'T have the count
+                const categoryEl = el.querySelector('.org-people-bar-graph-element__category, .org-people-bar-graph-element__label, span');
+                const categoryText = categoryEl ? categoryEl.textContent.trim() : 'Unknown';
+                
                 return {
-                    location: location.trim(),
-                    count: parseInt(countStr.replace(/[^0-9]/g, ''), 10),
+                    location: categoryText,
+                    count: parseInt(countText.replace(/[,.]/g, ''), 10) || 0,
                 };
             });
-        });
+        }, locationSelector);
 
         const result = {
             company: slug,
