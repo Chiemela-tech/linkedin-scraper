@@ -1,0 +1,32 @@
+{
+    "title": "LinkedIn Company Scraper Input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "companyUrl": {
+            "title": "Company URL or Slug",
+            "type": "string",
+            "description": "Enter the LinkedIn company URL (e.g., https://www.linkedin.com/company/accenture/) or just the slug (e.g., accenture).",
+            "editor": "textfield",
+            "prefill": "accenture"
+        },
+        "li_at": {
+            "title": "LinkedIn li_at Cookie",
+            "type": "string",
+            "description": "Your LinkedIn 'li_at' session cookie. This is required to access the People tab.",
+            "editor": "textfield",
+            "isSecret": true
+        },
+        "maxWaitMs": {
+            "title": "Max Wait Time (ms)",
+            "type": "integer",
+            "description": "Maximum time to wait for the page to load.",
+            "default": 30000,
+            "minimum": 5000
+        }
+    },
+    "required": [
+        "companyUrl",
+        "li_at"
+    ]
+}
