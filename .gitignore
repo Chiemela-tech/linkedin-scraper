@@ -12,3 +12,6 @@ storage/
 !**/storage/key_value_stores/linkedin-stats/
 !**/storage/key_value_stores/linkedin-stats/*.json
 **/storage/key_value_stores/default/INPUT.json
+
+# Uniquely named storage
+linkedin_members_scraper_storage/
