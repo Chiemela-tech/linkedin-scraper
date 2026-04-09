@@ -1,0 +1,13 @@
+{
+  "name": "linkedin-jobs-scraper",
+  "version": "1.0.0",
+  "description": "Scraper for LinkedIn Total and Remote job counts",
+  "main": "src/main.js",
+  "dependencies": {
+    "apify": "^3.7.0",
+    "playwright": "^1.40.1"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
+}

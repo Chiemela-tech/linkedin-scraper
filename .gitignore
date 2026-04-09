@@ -1,1 +1,7 @@
 node_modules
+storage/
+**/storage/
+.DS_Store
+*.png
+*.webp
+*.log

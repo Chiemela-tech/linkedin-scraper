@@ -1,0 +1,17 @@
+{
+    "title": "Total Jobs Scraper Input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "li_at": {
+            "title": "LinkedIn li_at Cookie",
+            "type": "string",
+            "description": "Your LinkedIn 'li_at' session cookie. Required to see the total job count headline.",
+            "editor": "textfield",
+            "isSecret": true
+        }
+    },
+    "required": [
+        "li_at"
+    ]
+}

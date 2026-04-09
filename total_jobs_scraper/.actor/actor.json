@@ -1,0 +1,9 @@
+{
+    "actorSpecification": 1,
+    "name": "total-jobs-scraper",
+    "title": "LinkedIn Total Jobs Scraper (Accenture)",
+    "description": "Scrapes the exact total job count headline from Accenture's LinkedIn jobs page.",
+    "version": "1.0",
+    "buildTag": "latest",
+    "dockerfile": "./Dockerfile"
+}

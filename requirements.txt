@@ -1,0 +1,4 @@
+apify
+playwright
+beautifulsoup4
+requests
