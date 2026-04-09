@@ -1,7 +1,14 @@
 node_modules
-storage/
-**/storage/
 .DS_Store
 *.png
 *.webp
 *.log
+
+# Ignore all storage by default
+storage/
+**/storage/
+
+# Specifically allow the numerical results but NOT the cookies
+!**/storage/key_value_stores/linkedin-stats/
+!**/storage/key_value_stores/linkedin-stats/*.json
+**/storage/key_value_stores/default/INPUT.json
