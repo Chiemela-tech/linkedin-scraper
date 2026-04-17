@@ -4,7 +4,7 @@ import time
 import random
 from bs4 import BeautifulSoup
 from apify import Actor
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
 # Constants
 HEADERS = {
@@ -34,32 +34,47 @@ def extract_number(text: str, keep_plus: bool = False) -> str:
         return result
     return "0"
 
-def scrape_linkedin(url: str, li_at: str = None) -> dict:
-    """Main scraping logic for Remote Jobs using Playwright."""
-    with sync_playwright() as pw:
-        Actor.log.info(f"Launching browser to scrape remote jobs: {url}")
-        browser = pw.chromium.launch(headless=True)
-        ctx = browser.new_context(
-            user_agent=HEADERS["User-Agent"],
-            viewport={'width': 1280, 'height': 800}
+async def scrape_linkedin(url: str, li_at: str = None) -> dict:
+    """Main scraping logic for Remote Jobs using Async Playwright."""
+    async with async_playwright() as pw:
+        Actor.log.info(f"Launching VISIBLE browser for debugging: {url}")
+        # Setting headless=False so you can see the window
+        browser = await pw.chromium.launch(headless=False)
+        
+        ctx = await browser.new_context(
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            viewport={'width': 1440, 'height': 900}
         )
-        if li_at:
-            ctx.add_cookies([{
+        
+        page = await ctx.new_page()
+        try:
+            # Step 1: Visit homepage WITHOUT cookies first
+            Actor.log.info("Visiting LinkedIn homepage to establish session...")
+            await page.goto("https://www.linkedin.com/", wait_until="domcontentloaded", timeout=30000)
+            await asyncio.sleep(2)
+
+            # Step 2: Inject the cookie now
+            Actor.log.info("Injecting li_at cookie...")
+            await ctx.add_cookies([{
                 "name": "li_at",
-                "value": li_at,
+                "value": li_at.strip().replace('"', ''),
                 "domain": ".linkedin.com",
                 "path": "/",
             }])
-        
-        page = ctx.new_page()
-        try:
-            page.goto(url, wait_until="load", timeout=60000)
-            time.sleep(5) # Wait for dynamic content
+
+            # Step 3: Refresh to apply cookie
+            await page.reload(wait_until="domcontentloaded")
+            await asyncio.sleep(3)
+
+            # Step 4: Navigate to the actual jobs page
+            Actor.log.info(f"Navigating to Target URL: {url}")
+            await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            await asyncio.sleep(5) # Wait for dynamic content
             
             if "login" in page.url or "checkpoint" in page.url:
                 Actor.log.warning(f"Note: Page redirected to login view, but we will still attempt extraction.")
         except Exception as e:
-            browser.close()
+            await browser.close()
             return {"error": str(e), "success": False}
 
         # Selectors focused on Remote Job results
@@ -75,9 +90,9 @@ def scrape_linkedin(url: str, li_at: str = None) -> dict:
         # Try selectors
         for sel in selectors:
             try:
-                el = page.wait_for_selector(sel, timeout=5000)
+                el = await page.wait_for_selector(sel, timeout=5000)
                 if el:
-                    raw = el.inner_text()
+                    raw = await el.inner_text()
                     if re.search(r"\d", raw):
                         result["totalRemoteJobs"] = extract_number(raw, keep_plus=True)
                         result["raw_text"] = raw
@@ -87,7 +102,7 @@ def scrape_linkedin(url: str, li_at: str = None) -> dict:
 
         # Body regex fallback for remote patterns
         if result["totalRemoteJobs"] == "0":
-            body_text = page.inner_text("body")
+            body_text = await page.inner_text("body")
             patterns = [
                 r"([\d,]+\+?)\s+(?:remote\s+)?(?:results?|jobs?)",
             ]
@@ -100,18 +115,24 @@ def scrape_linkedin(url: str, li_at: str = None) -> dict:
 
         # Get company name from title
         try:
-            result["company"] = page.title().split("|")[0].split("–")[0].strip()
+            page_title = await page.title()
+            result["company"] = page_title.split("|")[0].split("–")[0].strip()
         except:
             pass
             
-        browser.close()
+        await browser.close()
         return {**result, "success": True, "url": url}
 
 async def main():
     async with Actor:
         # Get input
         actor_input = await Actor.get_input() or {}
-        url = actor_input.get("url") or actor_input.get("companyUrl")
+        url = (
+            actor_input.get("url") or 
+            actor_input.get("remoteSearchUrl") or 
+            actor_input.get("companyUrl") or 
+            actor_input.get("companyJobsUrl")
+        )
         li_at = actor_input.get("li_at")
 
         if not url:
@@ -119,7 +140,7 @@ async def main():
             return
 
         # Execute scrape
-        result = scrape_linkedin(url, li_at)
+        result = await scrape_linkedin(url, li_at)
         
         # Save results
         if result.get("success"):
