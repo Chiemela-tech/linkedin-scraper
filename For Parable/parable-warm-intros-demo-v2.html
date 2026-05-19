@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  window.addEventListener('error', function(e) {
+    alert('JavaScript Error: ' + e.message + '\nLine: ' + e.lineno);
+  });
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parable Warm Intros — Demo</title>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --border: #e6e4df;
+    --border-strong: #cfcbc1;
+    --text: #1a1a1a;
+    --text-soft: #6b6b6b;
+    --text-muted: #9a958c;
+    --accent: #2d6a4f;
+    --accent-hover: #1f4d39;
+    --accent-soft: #d8e8e0;
+    --warning: #b35900;
+    --warning-soft: #fde9d4;
+    --danger: #a31621;
+    --danger-soft: #fadbd8;
+    --info: #1e4d8c;
+    --info-soft: #d6e3f3;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .topbar .badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+  }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  button.btn {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button.btn:hover { background: var(--bg); border-color: var(--text-soft); }
+  button.btn.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  button.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button.btn.ghost { border-color: transparent; color: var(--text-soft); }
+  button.btn.ghost:hover { background: var(--bg); }
+  button.btn.danger { color: var(--danger); border-color: var(--danger); }
+  button.btn.danger:hover { background: var(--danger-soft); }
+  button.btn.small { padding: 4px 10px; font-size: 12px; }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 12px 18px;
+    font-size: 14px;
+    color: var(--text-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    user-select: none;
+  }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+  .tab .count {
+    display: inline-block;
+    font-size: 11px;
+    background: var(--border);
+    color: var(--text);
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .tab.active .count { background: var(--accent-soft); color: var(--accent); }
+
+  .container { padding: 28px 32px; max-width: 1280px; }
+
+  /* Seeds view */
+  .seeds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .seed-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .seed-name { font-size: 15px; font-weight: 600; margin: 0 0 4px 0; }
+  .seed-email { font-size: 12px; color: var(--text-soft); margin-bottom: 14px; }
+  .seed-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-bottom: 16px;
+  }
+  .seed-meta strong { color: var(--text); font-weight: 500; }
+  .seed-meta-active {
+    display: inline-block;
+    background: var(--info-soft);
+    color: var(--info);
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+
+  /* Lead picker (modal) */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    z-index: 50;
+    overflow-y: auto;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 920px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .modal-header-meta {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-top: 2px;
+  }
+  .modal-body { padding: 0; max-height: 65vh; overflow-y: auto; }
+  .modal-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg);
+  }
+  .modal-footer .footer-info { font-size: 12px; color: var(--text-soft); }
+
+  table.leads-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.leads-table thead th {
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  table.leads-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.leads-table tbody tr:hover { background: var(--bg); }
+  table.leads-table tbody tr.declined { opacity: 0.5; }
+  .lead-name { font-weight: 500; }
+  .lead-title { font-size: 12px; color: var(--text-soft); }
+  .lead-context-input {
+    font-family: inherit;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    width: 100%;
+    background: var(--surface);
+  }
+  .icp-pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .icp-5 { background: #c8e6c9; color: #1b5e20; }
+  .icp-4 { background: #dcedc8; color: #33691e; }
+  .icp-3 { background: #fff3cd; color: #6d4c00; }
+  .icp-2 { background: #ffe0b2; color: #6d3000; }
+  .icp-1 { background: #ffcdd2; color: #6d0000; }
+
+  /* Email preview */
+  .email-preview {
+    padding: 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    background: white;
+  }
+  .email-headers {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .email-headers .row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .email-headers .label {
+    color: var(--text-muted);
+    min-width: 60px;
+    font-family: -apple-system, sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .email-headers .val { font-family: -apple-system, sans-serif; font-size: 13px; }
+  .email-body { white-space: pre-wrap; font-family: -apple-system, sans-serif; font-size: 14px; }
+
+  /* In flight */
+  .batch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .batch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .batch-title { font-size: 15px; font-weight: 600; margin: 0 0 4px 0; }
+  .batch-meta { font-size: 12px; color: var(--text-soft); }
+  .batch-actions { display: flex; gap: 8px; }
+  .status-pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .status-awaiting { background: var(--info-soft); color: var(--info); }
+  .status-replied { background: var(--accent-soft); color: var(--accent); }
+  .status-stalled { background: var(--warning-soft); color: var(--warning); }
+  .status-closed { background: var(--bg); color: var(--text-muted); }
+  .status-approved { background: var(--accent-soft); color: var(--accent); }
+  .status-declined { background: var(--danger-soft); color: var(--danger); }
+  .status-pending { background: var(--bg); color: var(--text-soft); border: 1px solid var(--border); }
+  .status-intro-pending { background: #fff3cd; color: #6d4c00; }
+  .status-intro-sent { background: var(--accent-soft); color: var(--accent); }
+
+  .batch-leads-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--border);
+  }
+  .batch-leads-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .batch-leads-list li:last-child { border-bottom: none; }
+  .batch-lead-info { flex: 1; }
+  .batch-lead-actions { display: flex; gap: 6px; }
+
+  /* Approved view */
+  .approved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .approved-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .approved-card .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .approved-card .name { font-size: 14px; font-weight: 600; }
+  .approved-card .sub { font-size: 12px; color: var(--text-soft); }
+  .approved-card .actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  /* History */
+  .history-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .history-row {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 110px 1fr 130px 100px;
+    gap: 16px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-row .ts { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+
+  .info-banner {
+    background: var(--info-soft);
+    border: 1px solid #b8cce6;
+    color: var(--info);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* Compact section labels */
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+  }
+
+  /* Responsive Mobile Tweaks */
+  @media (max-width: 768px) {
+    .app-header { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+    .container { padding: 16px; }
+    #tabs nav { display: flex; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; width: 100%; }
+    .seeds-grid { grid-template-columns: 1fr; }
+    .modal-backdrop { padding: 12px; }
+    .modal-body { max-height: 75vh; }
+    table.leads-table, table.batch-table { display: block; overflow-x: auto; white-space: nowrap; width: 100%; }
+    .modal-footer { flex-direction: column; gap: 12px; align-items: stretch; }
+    .modal-footer .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div id="loading-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-soft);">Loading live data from Airtable...</div>
+
+<div class="topbar">
+  <div>
+    <h1 style="display:inline-block">Parable Warm Intros <span class="badge" style="background:var(--accent-soft);color:var(--accent-hover);">Live Airtable Data</span></h1>
+  </div>
+  <div class="topbar-actions">
+    <span id="auth-status" style="font-size:12px; margin-right: 12px; color: var(--text-soft);"></span>
+    <button class="btn small primary" onclick="scanInbox()" title="Read Gmail to find replies from seeds">Scan Inbox</button>
+    <button id="connect-email-btn" class="btn small ghost" onclick="connectEmail()">Connect Email</button>
+    <button class="btn small ghost" onclick="advanceDay()" title="Simulate the passage of time so reminders fire">Advance day (sim)</button>
+    <button class="btn small danger" onclick="resetDemo()">Reset demo</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="container" id="view"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// MOCK DATA & STATE
+// ============================================================
+
+let SEED_DATA = [];
+let LEAD_DATA = [];
+let airtableLoading = true;
+let airtableError = null;
+
+const AIRTABLE_BASE = 'appfJQy3XTlEpwsqj';
+const AIRTABLE_TOKEN = 'REDACTED_AIRTABLE_TOKEN_FOR_GITHUB';
+
+async function fetchAirtableData() {
+  try {
+    let allRecords = [];
+    let offset = '';
+    
+    do {
+      const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/SocialGraph?offset=${offset}`;
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + AIRTABLE_TOKEN } });
+      if (!res.ok) throw new Error('Airtable API error: ' + res.statusText);
+      const data = await res.json();
+      allRecords = allRecords.concat(data.records);
+      offset = data.offset || '';
+    } while (offset);
+
+    const seedsMap = {};
+    const leads = [];
+
+    allRecords.forEach((record, i) => {
+      const f = record.fields;
+      if (!f.full_name && !f['seed-select']) return;
+      
+      const seedName = f['seed-select'] || 'Unknown Seed';
+      if (!seedsMap[seedName]) {
+        const s_id = 's' + (Object.keys(seedsMap).length + 1);
+        const email = seedName.toLowerCase().replace(/[^a-z0-9]/g, '.') + '@parable.co';
+        seedsMap[seedName] = { id: s_id, name: seedName, email: email, theme: '' };
+      }
+      const s_id = seedsMap[seedName].id;
+
+      let icp = parseInt(f.icp_score) || 0;
+      let tier = (f['tier '] || f.tier || 'Tier 1').trim();
+      
+      leads.push({
+        id: record.id,
+        full_name: (f.full_name || '').trim(),
+        title: (f.title || '').trim(),
+        company: (f.company_name || '').trim(),
+        domain: (f.company_domain_root || '').trim(),
+        icp: icp,
+        tier: tier,
+        primary_seed: s_id
+      });
+    });
+
+    SEED_DATA = Object.values(seedsMap);
+    LEAD_DATA = leads;
+    airtableLoading = false;
+    render();
+  } catch (err) {
+    console.error(err);
+    airtableError = err.message;
+    airtableLoading = false;
+    render();
+  }
+}
+
+let connectedUserEmail = null;
+
+async function checkAuthStatus() {
+  try {
+    const res = await fetch('http://localhost:3000/api/user');
+    const data = await res.json();
+    if (data.connected) {
+      connectedUserEmail = data.email;
+      document.getElementById('auth-status').innerHTML = '<strong>Connected:</strong> ' + data.email;
+      const btn = document.getElementById('connect-email-btn');
+      btn.textContent = 'Email Connected ✅';
+      btn.classList.remove('primary');
+      btn.disabled = true;
+    }
+  } catch (err) {
+    console.error('Failed to check auth status. Make sure the Node server is running on port 3000.', err);
+  }
+}
+
+function connectEmail() {
+  window.location.href = 'http://localhost:3000/auth/google';
+}
+
+// Check auth on load
+checkAuthStatus();
+
+async function scanInbox() {
+  if (!connectedUserEmail) {
+    toast('Please connect your email first.');
+    return;
+  }
+  
+  const activeBatches = state.batches
+    .filter(b => b.status === 'Awaiting reply')
+    .map(b => ({
+      id: b.id,
+      leads_info: b.leads.map(lid => {
+        const l = getLead(lid);
+        return { id: lid, full_name: l.full_name };
+      })
+    }));
+
+  if (activeBatches.length === 0) {
+    toast('No batches awaiting replies right now.');
+    return;
+  }
+
+  toast('Scanning inbox for replies...');
+  try {
+    const res = await fetch('http://localhost:3000/api/scan-inbox', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activeBatches })
+    });
+    
+    if (!res.ok) throw new Error('API Error');
+    const data = await res.json();
+    
+    if (data.updates && data.updates.length > 0) {
+      let approved = 0;
+      let declined = 0;
+      data.updates.forEach(u => {
+        markLeadDecision(u.batch_id, u.lead_id, u.decision);
+        if (u.decision === 'Approved') approved++;
+        else declined++;
+      });
+      toast(`Inbox Scan Complete: Auto-marked ${approved} approved, ${declined} declined based on email replies!`);
+      render();
+    } else {
+      toast('Inbox Scan Complete: No new replies detected for the current leads.');
+    }
+  } catch (err) {
+    console.error(err);
+    toast('Failed to scan inbox.');
+  }
+}
+
+const DEFAULT_STATE = () => ({
+  // Per-lead overrides on top of LEAD_DATA
+  leadOverrides: {}, // { lead_id: { status, current_batch, include_in_next_batch, context } }
+  // Seeds last_asked_at, computed but cached
+  seeds: SEED_DATA.map(s => ({ ...s, last_asked_at: null })),
+  batches: [], // { id, seed_id, leads, status, sent_at, last_contact_at, reminder_count }
+  history: [], // { id, seed_id, lead_id, decision, decided_at, batch_id }
+  // Sim clock
+  simNow: new Date().toISOString(),
+  // UI state
+  activeTab: 'seeds',
+  historyFilterSeed: 'all',
+  historyFilterStatus: 'all',
+  seedsFilter: '',
+  modal: null
+});
+
+const STORAGE_KEY = 'parable-warm-intros-demo-v7';
+let state = loadState();
+
+
+const N8N_WEBHOOK_URL = 'https://prodigy.app.n8n.cloud/webhook/parable-send-intro';
+
+function sendToN8n(action, payload) {
+  try {
+    fetch(N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload })
+    }).catch(e => console.error('n8n fetch error:', e));
+  } catch (err) {
+    console.error('n8n webhook error:', err);
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return { ...DEFAULT_STATE(), ...JSON.parse(raw) };
+  } catch (e) {}
+  return DEFAULT_STATE();
+}
+function saveState() {
+  // strip transient UI state from persist
+  const { activeTab, modal, pickerQuery, ...persist } = state;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persist)); } catch (e) {}
+}
+function resetDemo() {
+  if (!confirm('Reset all demo state? This clears any batches, history, and ticks you\'ve made.')) return;
+  state = DEFAULT_STATE();
+  saveState();
+  render();
+  toast('Demo reset.');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function nowISO() { return state.simNow; }
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function daysBetween(isoA, isoB) {
+  return Math.floor((new Date(isoB) - new Date(isoA)) / (1000 * 60 * 60 * 24));
+}
+function daysAgo(iso) {
+  if (!iso) return null;
+  return daysBetween(iso, nowISO());
+}
+
+function getLead(id) {
+  const base = LEAD_DATA.find(l => l.id === id);
+  if (!base) return null;
+  const o = state.leadOverrides[id] || {};
+  // Default include_in_next_batch is false — too many real leads to safely auto-pre-tick.
+  // Adam uses the ICP tick buttons or ticks manually.
+  return { ...base, status: o.status || 'Pending', current_batch: o.current_batch || null, include_in_next_batch: o.include_in_next_batch === true, context: o.context || '', previously_declined_by: o.previously_declined_by || [] };
+}
+function setLead(id, patch) {
+  state.leadOverrides[id] = { ...(state.leadOverrides[id] || {}), ...patch };
+}
+function getSeed(id) {
+  return SEED_DATA.find(s => s.id === id);
+}
+function leadsForSeed(seed_id) {
+  return LEAD_DATA.filter(l => l.primary_seed === seed_id).map(l => getLead(l.id));
+}
+function seedLastAsked(seed_id) {
+  const batches = state.batches.filter(b => b.seed_id === seed_id);
+  if (!batches.length) return null;
+  return batches.reduce((max, b) => (!max || b.sent_at > max) ? b.sent_at : max, null);
+}
+function activeBatchesForSeed(seed_id) {
+  return state.batches.filter(b => b.seed_id === seed_id && (b.status === 'Awaiting reply' || b.status === 'Replied'));
+}
+
+// ============================================================
+// EMAIL TEMPLATES
+// ============================================================
+
+function renderRequestEmail(seed, leads) {
+  const firstName = seed.name.split(' ')[0];
+  const companies = [...new Set(leads.map(l => l.company))];
+  const summary = companies.length <= 3 ? companies.join(', ') : `${companies.slice(0,3).join(', ')} + ${companies.length - 3} more`;
+  const subject = `Quick ask — a few intros at ${summary}?`;
+  const leadLines = leads.map(l => {
+    const ctx = l.context ? `. <b>${l.context}</b>` : '';
+    return `  • ${l.full_name} — ${l.title} at ${l.company}${ctx}`;
+  }).join('\n');
+  const body = `Hey ${firstName},
+
+Hope you're well. I'm reaching out because, looking through your network, there are a handful of folks I'd love an intro to as I'm pushing forward at Parable.
+
+Would you be open to making intros to any of the people below? No pressure on any individually — happy to take a yes / no per person.
+
+${leadLines}
+
+If easier, just reply with the names you're comfortable connecting me with. I'll handle the rest from there.
+
+Thanks,
+Adam`;
+  return { 
+    from: connectedUserEmail ? connectedUserEmail : 'adam@parable.co', 
+    to: seed.email, 
+    cc: connectedUserEmail ? connectedUserEmail : '',
+    subject, 
+    body 
+  };
+}
+
+function renderReminderEmail(seed, batch) {
+  const firstName = seed.name.split(' ')[0];
+  let body;
+  if (batch.reminder_count === 0) {
+    body = `Hey ${firstName},\n\nJust a gentle nudge on this — happy to take any subset, even just one or two.\n\nThanks,\nAdam`;
+  } else if (batch.reminder_count === 1) {
+    body = `Hey ${firstName},\n\nLast bump on this one. Totally fine to pass on all of them — just want to make sure it didn't get lost.\n\nThanks,\nAdam`;
+  } else {
+    body = `Hey ${firstName},\n\nNo worries if not the right ask right now — happy to circle back another time. Letting this one rest.\n\nThanks,\nAdam`;
+  }
+  return { from: 'adam@parable.co', to: seed.email, subject: '(reply in same thread)', body };
+}
+
+function renderIntroEmail(seed, lead) {
+  const seedFirst = seed.name.split(' ')[0];
+  const leadFirst = lead.full_name.split(' ')[0];
+  const subject = `Forwardable: intro to ${leadFirst} at ${lead.company}`;
+  const ctx = lead.context ? `\n\n(For your reference: ${lead.context})` : '';
+  const body = `Hey ${seedFirst},
+
+Thanks again for the connect. Below is something you can copy/paste or forward to ${leadFirst} — feel free to tweak as you see fit.${ctx}
+
+────────────────────
+
+Hi ${leadFirst},
+
+I wanted to introduce you to Adam, the CEO of Parable. He's been building something I think you'd find interesting given your work at ${lead.company}, and I figured the two of you should know each other.
+
+Adam — over to you to take it from here.
+
+Best,
+${seedFirst}
+
+────────────────────
+
+For your reference, Adam's contact: adam@parable.co
+
+Thanks,
+Adam`;
+  return { from: 'adam@parable.co', to: seed.email, subject, body };
+}
+
+// ============================================================
+// ACTIONS (the workflow logic — stand-in for n8n)
+// ============================================================
+
+// Workflow A: build request, push to drafts (simulated)
+function buildRequestBatch(seed_id, lead_ids) {
+  const batch = {
+    id: 'b' + uid(),
+    seed_id,
+    leads: [...lead_ids],
+    status: 'Awaiting reply',
+    sent_at: new Date().toISOString(),
+    last_contact_at: new Date().toISOString(),
+    reminder_count: 0,
+    request_email_thread_id: 'thread_' + uid()
+  };
+  state.batches.push(batch);
+  lead_ids.forEach(lid => setLead(lid, {
+    status: 'Awaiting reply',
+    current_batch: batch.id,
+    include_in_next_batch: false
+  }));
+  saveState();
+  return batch;
+}
+
+// Workflow D: reminder cron (simulated — runs on Advance day)
+function runReminderCron() {
+  let drafted = 0;
+  state.batches.forEach(b => {
+    if (b.status !== 'Awaiting reply') return;
+    const sinceLast = daysBetween(b.last_contact_at, nowISO());
+    if (sinceLast >= 7) {
+      if (b.reminder_count >= 3) {
+        b.status = 'Stalled';
+        b.leads.forEach(lid => {
+          const l = getLead(lid);
+          if (l.status === 'Awaiting reply') setLead(lid, { status: 'Pending', current_batch: null });
+        });
+      } else {
+        b.reminder_count += 1;
+        b.last_contact_at = nowISO();
+        drafted += 1;
+      }
+    }
+  });
+  saveState();
+  return drafted;
+}
+
+// Manual: mark a lead approved/declined inside a batch (Adam's path 2)
+function markLeadDecision(batch_id, lead_id, decision) {
+  const batch = state.batches.find(b => b.id === batch_id);
+  if (!batch) return;
+  const seed = getSeed(batch.seed_id);
+  state.history.push({
+    id: 'h' + uid(),
+    seed_id: seed.id,
+    lead_id,
+    decision,
+    decided_at: new Date().toISOString(),
+    batch_id
+  });
+  if (decision === 'Approved') {
+    setLead(lead_id, { status: 'Approved' });
+  } else if (decision === 'Declined') {
+    const l = getLead(lead_id);
+    const newDeclined = [...new Set([...(l.previously_declined_by || []), seed.id])];
+    setLead(lead_id, { status: 'Declined', previously_declined_by: newDeclined });
+  }
+  // If all leads in batch have been decided, close the batch
+  const allDecided = batch.leads.every(lid => {
+    const l = getLead(lid);
+    return l.status === 'Approved' || l.status === 'Declined' || l.status === 'Intro pending send' || l.status === 'Intro sent';
+  });
+  if (allDecided) batch.status = 'Replied';
+  saveState();
+  sendToN8n('mark-decision', { batch_id, lead_id, decision });
+}
+
+// Workflow C: build intro draft (Adam clicks "Generate intro draft" on an Approved lead)
+function buildIntroDraft(lead_id) {
+  setLead(lead_id, { status: 'Intro pending send' });
+  saveState();
+}
+
+// Mark intro sent (Adam's manual action after sending the forwardable email)
+function markIntroSent(lead_id) {
+  const l = getLead(lead_id);
+  // Find the seed via the most recent batch this lead was in
+  const batch = state.batches.find(b => b.id === l.current_batch);
+  const seed_id = batch ? batch.seed_id : LEAD_DATA.find(ld => ld.id === lead_id).primary_seed;
+  state.history.push({
+    id: 'h' + uid(),
+    seed_id,
+    lead_id,
+    decision: 'Intro sent',
+    decided_at: nowISO(),
+    batch_id: batch ? batch.id : null
+  });
+  setLead(lead_id, { status: 'Intro sent' });
+  saveState();
+  sendToN8n('intro-sent', { lead_id, seed_id });
+}
+
+// Sim clock
+function advanceDay() {
+  const next = new Date(nowISO());
+  next.setDate(next.getDate() + 1);
+  state.simNow = next.toISOString();
+  const drafted = runReminderCron();
+  saveState();
+  if (drafted > 0) toast(`Advanced to ${fmtDate(state.simNow)}. ${drafted} reminder draft${drafted>1?'s':''} created.`);
+  else toast(`Advanced to ${fmtDate(state.simNow)}.`);
+  render();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+
+function setTab(tab) { state.activeTab = tab; render(); }
+
+function tabs() {
+  const inFlight = state.batches.filter(b => b.status === 'Awaiting reply' || b.status === 'Replied').length;
+  const approved = LEAD_DATA.filter(l => {
+    const s = getLead(l.id).status;
+    return s === 'Approved' || s === 'Intro pending send';
+  }).length;
+  const stalled = state.batches.filter(b => b.status === 'Stalled').length;
+  return `
+    <div class="tab ${state.activeTab==='seeds'?'active':''}" onclick="setTab('seeds')">Seeds</div>
+    <div class="tab ${state.activeTab==='inflight'?'active':''}" onclick="setTab('inflight')">In flight ${inFlight?`<span class="count">${inFlight}</span>`:''}</div>
+    <div class="tab ${state.activeTab==='approved'?'active':''}" onclick="setTab('approved')">Approved ${approved?`<span class="count">${approved}</span>`:''}</div>
+    <div class="tab ${state.activeTab==='stalled'?'active':''}" onclick="setTab('stalled')">Stalled ${stalled?`<span class="count">${stalled}</span>`:''}</div>
+    <div class="tab ${state.activeTab==='history'?'active':''}" onclick="setTab('history')">History</div>
+  `;
+}
+
+function viewSeeds() {
+  const q = (state.seedsFilter || '').toLowerCase().trim();
+  const filteredSeeds = q 
+    ? SEED_DATA.filter(s => s.name.toLowerCase().includes(q) || (s.theme && s.theme.toLowerCase().includes(q)))
+    : SEED_DATA;
+    
+  const rows = filteredSeeds.map(s => {
+    const lastAsked = seedLastAsked(s.id);
+    const active = activeBatchesForSeed(s.id).length;
+    const allLeads = leadsForSeed(s.id);
+    const totalPending = allLeads.filter(l => l.status === 'Pending').length;
+    const top5 = allLeads.filter(l => l.status === 'Pending' && l.icp === 5).length;
+    
+    const activeHtml = active ? `<span class="seed-meta-active">${active} in flight</span>` : '<span style="color:var(--text-muted)">Idle</span>';
+    const lastAskedHtml = lastAsked ? `<strong>${daysAgo(lastAsked)}d ago</strong>` : '<span style="color:var(--text-muted)">never</span>';
+    
+    return `
+      <tr>
+        <td>
+          <div class="lead-name">${s.name}</div>
+          <div class="lead-title">${s.email}</div>
+          ${s.theme ? `<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">${s.theme}</div>` : ''}
+        </td>
+        <td style="vertical-align:middle">${lastAskedHtml}</td>
+        <td style="vertical-align:middle"><strong>${totalPending}</strong> pending<br><span style="font-size:11px;color:var(--text-soft)">${top5} ICP 5</span></td>
+        <td style="vertical-align:middle">${activeHtml}</td>
+        <td style="vertical-align:middle; text-align:right;">
+          <button class="btn primary small" onclick="openLeadPicker('${s.id}')">Pick leads & send request →</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  return `
+    <div class="info-banner">
+      <div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">How to use this process:</div>
+      <ol style="margin: 0; padding-left: 24px; font-size: 13px;">
+        <li style="margin-bottom: 4px;"><strong>Pick a seed:</strong> Review the available seeds below and click "Pick leads & send request".</li>
+        <li style="margin-bottom: 4px;"><strong>Select leads:</strong> Search, filter, and tick the leads to ask about (or quickly use the ICP tick buttons).</li>
+        <li style="margin-bottom: 4px;"><strong>Send request:</strong> Save the request draft to move the batch to the "In flight" step.</li>
+        <li style="margin-bottom: 0;"><strong>Track & follow up:</strong> Use the other tabs to approve/decline, send reminders, and draft intros until "Intro sent" ✅.</li>
+      </ol>
+    </div>
+    <div style="margin-bottom: 20px;">
+      <input type="text" placeholder="Search seeds by name or theme..." value="${q.replace(/"/g,'&quot;')}" oninput="state.seedsFilter=this.value; render(); setTimeout(()=>{const el=document.getElementById('seeds-search'); if(el){el.focus(); el.setSelectionRange(el.value.length,el.value.length);}},0)" id="seeds-search" style="padding: 8px 12px; width: 100%; max-width: 400px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+    </div>
+    <div style="overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow);">
+      <table class="leads-table">
+        <thead>
+          <tr>
+            <th>Seed Name</th>
+            <th>Last Asked</th>
+            <th>Pending Leads</th>
+            <th>Status</th>
+            <th style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows || '<tr><td colspan="5" class="empty-state" style="border:none">No seeds found.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function viewInflight() {
+  const batches = state.batches.filter(b => b.status === 'Awaiting reply' || b.status === 'Replied');
+  if (!batches.length) return `<div class="empty-state">No batches in flight. Pick a seed and send a batch from the Seeds tab.</div>`;
+  return batches.map(b => batchCard(b)).join('');
+}
+
+function batchCard(b) {
+  const seed = getSeed(b.seed_id);
+  const reminders = b.reminder_count;
+  const sinceContact = daysBetween(b.last_contact_at, nowISO());
+  const reminderHint = b.status === 'Awaiting reply' ?
+    (sinceContact >= 7 ? `<span class="status-pill status-stalled">Reminder due</span>` : `Reminder in ${7 - sinceContact}d`) : '';
+  const leadsHtml = b.leads.map(lid => {
+    const l = getLead(lid);
+    const completedIcon = l.status === 'Intro sent' ? ' ✅' : '';
+    const statusClass = {
+      'Awaiting reply': 'status-awaiting',
+      'Approved': 'status-approved',
+      'Declined': 'status-declined',
+      'Intro pending send': 'status-intro-pending',
+      'Intro sent': 'status-intro-sent'
+    }[l.status] || 'status-pending';
+    const actions = (l.status === 'Awaiting reply') ? `
+      <button class="btn small" onclick="markLeadDecision('${b.id}','${lid}','Approved'); render()">Approve</button>
+      <button class="btn small" onclick="markLeadDecision('${b.id}','${lid}','Declined'); render()">Decline</button>
+    ` : '';
+    return `
+      <li>
+        <div class="batch-lead-info">
+          <div class="lead-name">${l.full_name}</div>
+          <div class="lead-title">${l.title} at ${l.company} · ICP ${l.icp}</div>
+        </div>
+        <div class="batch-lead-actions">
+          <span class="status-pill ${statusClass}">${l.status}${completedIcon}</span>
+          ${actions}
+        </div>
+      </li>
+    `;
+  }).join('');
+  const showReminderBtn = b.status === 'Awaiting reply' && sinceContact >= 1 && b.reminder_count < 3;
+  return `
+    <div class="batch-card">
+      <div class="batch-header">
+        <div>
+          <h3 class="batch-title">${seed.name}</h3>
+          <div class="batch-meta">
+            Sent ${fmtDate(b.sent_at)} (${daysAgo(b.sent_at)}d ago) · ${b.leads.length} leads · ${reminders} reminder${reminders===1?'':'s'} sent
+            ${reminderHint ? ` · ${reminderHint}` : ''}
+          </div>
+        </div>
+        <div class="batch-actions">
+          <span class="status-pill status-${b.status.toLowerCase().replace(' ','-')}">${b.status}</span>
+          ${showReminderBtn ? `<button class="btn small" onclick="previewReminder('${b.id}')">Preview reminder</button>` : ''}
+        </div>
+      </div>
+      <ul class="batch-leads-list">${leadsHtml}</ul>
+    </div>
+  `;
+}
+
+function viewApproved() {
+  const items = LEAD_DATA.map(l => getLead(l.id)).filter(l => l.status === 'Approved' || l.status === 'Intro pending send');
+  if (!items.length) return `<div class="empty-state">No approved leads yet. Approve someone in the In flight tab.</div>`;
+  const cards = items.map(l => {
+    const batch = state.batches.find(b => b.id === l.current_batch);
+    const seed = batch ? getSeed(batch.seed_id) : getSeed(l.primary_seed);
+    const isPending = l.status === 'Intro pending send';
+    return `
+      <div class="approved-card">
+        <div class="row">
+          <div>
+            <div class="name">${l.full_name}</div>
+            <div class="sub">${l.title} at ${l.company}</div>
+            <div class="sub" style="margin-top:4px">via ${seed.name}</div>
+          </div>
+          <span class="status-pill ${isPending?'status-intro-pending':'status-approved'}">${l.status}</span>
+        </div>
+        <div class="actions">
+          ${!isPending
+            ? `<button class="btn primary small" onclick="previewIntro('${l.id}')">Generate intro draft</button>`
+            : `<button class="btn small" onclick="previewIntro('${l.id}')">Re-preview draft</button><button class="btn primary small" onclick="markIntroSent('${l.id}'); render()">Mark intro sent</button>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+  return `<div class="approved-grid">${cards}</div>`;
+}
+
+function viewStalled() {
+  const stalled = state.batches.filter(b => b.status === 'Stalled');
+  if (!stalled.length) return `<div class="empty-state">No stalled batches. A batch becomes Stalled when it is in flight, we're awaiting a reply, and nothing happens for 7 days.</div>`;
+  return stalled.map(b => batchCard(b)).join('');
+}
+
+function viewHistory() {
+  if (!state.history.length) return `<div class="empty-state">No history yet. Decisions will appear here as they're recorded.</div>`;
+  
+  const seedsWithHistory = [...new Set(state.history.map(h => h.seed_id))];
+  const seedOptions = seedsWithHistory.map(sid => {
+    const s = getSeed(sid);
+    return `<option value="${sid}" ${state.historyFilterSeed === sid ? 'selected' : ''}>${s ? s.name : sid}</option>`;
+  }).join('');
+  
+  const statusesWithHistory = [...new Set(state.history.map(h => h.decision))];
+  const statusOptions = statusesWithHistory.map(status => {
+    return `<option value="${status}" ${state.historyFilterStatus === status ? 'selected' : ''}>${status}</option>`;
+  }).join('');
+  
+  let filtered = state.history;
+  if (state.historyFilterSeed !== 'all') {
+    filtered = filtered.filter(h => h.seed_id === state.historyFilterSeed);
+  }
+  if (state.historyFilterStatus !== 'all') {
+    filtered = filtered.filter(h => h.decision === state.historyFilterStatus);
+  }
+  
+  const sorted = [...filtered].sort((a,b) => b.decided_at.localeCompare(a.decided_at));
+  
+  const rows = sorted.map(h => {
+    const seed = getSeed(h.seed_id);
+    const lead = LEAD_DATA.find(l => l.id === h.lead_id);
+    const cls = h.decision === 'Approved' ? 'status-approved' : h.decision === 'Declined' ? 'status-declined' : 'status-intro-sent';
+    const completedIcon = h.decision === 'Intro sent' ? ' ✅' : '';
+    return `
+      <div class="history-row">
+        <div class="ts">${fmtDateShort(h.decided_at)}</div>
+        <div><strong>${lead ? lead.full_name : '?'}</strong> <span class="lead-title">— ${lead ? lead.company : ''}</span></div>
+        <div>via ${seed ? seed.name : '?'}</div>
+        <div><span class="status-pill ${cls}">${h.decision}${completedIcon}</span></div>
+      </div>
+    `;
+  }).join('');
+  
+  return `
+    <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center;">
+      <div>
+        <label for="history-filter" style="font-size: 13px; font-weight: 500;">Filter by Seed:</label>
+        <select id="history-filter" onchange="state.historyFilterSeed = this.value; render()" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; margin-left: 8px;">
+          <option value="all" ${state.historyFilterSeed === 'all' ? 'selected' : ''}>All Seeds</option>
+          ${seedOptions}
+        </select>
+      </div>
+      <div>
+        <label for="history-status-filter" style="font-size: 13px; font-weight: 500;">Filter by Status:</label>
+        <select id="history-status-filter" onchange="state.historyFilterStatus = this.value; render()" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; margin-left: 8px;">
+          <option value="all" ${state.historyFilterStatus === 'all' ? 'selected' : ''}>All Statuses</option>
+          ${statusOptions}
+        </select>
+      </div>
+    </div>
+    <div class="history-list">
+      ${rows || '<div class="empty-state" style="padding: 20px;">No history matching the filters.</div>'}
+    </div>
+  `;
+}
+
+function render() {
+  if (airtableLoading) return; // Keep loading overlay visible
+  if (airtableError) {
+    document.getElementById('loading-overlay').innerHTML = '<span style="color:var(--danger)">Error: ' + airtableError + '</span>';
+    return;
+  }
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) overlay.style.display = 'none';
+  
+  document.getElementById('tabs').innerHTML = tabs();
+  let html = '';
+  switch (state.activeTab) {
+    case 'seeds':    html = viewSeeds();    break;
+    case 'inflight': html = viewInflight(); break;
+    case 'approved': html = viewApproved(); break;
+    case 'stalled':  html = viewStalled();  break;
+    case 'history':  html = viewHistory();  break;
+  }
+  document.getElementById('view').innerHTML = html;
+  renderModal();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+
+function renderModal() {
+  const existing = document.getElementById('modal-root');
+  if (existing) existing.remove();
+  if (!state.modal) return;
+  const root = document.createElement('div');
+  root.id = 'modal-root';
+  document.body.appendChild(root);
+  if (state.modal.kind === 'leadPicker')   root.innerHTML = modalLeadPicker(state.modal.seed_id);
+  if (state.modal.kind === 'requestEmail') root.innerHTML = modalRequestEmail(state.modal.seed_id, state.modal.lead_ids);
+  if (state.modal.kind === 'introEmail')   root.innerHTML = modalIntroEmail(state.modal.lead_id);
+  if (state.modal.kind === 'reminderEmail')root.innerHTML = modalReminderEmail(state.modal.batch_id);
+}
+function openLeadPicker(seed_id) { state.modal = { kind: 'leadPicker', seed_id }; state.pickerQuery = ''; render(); }
+function openRequestEmail(seed_id, lead_ids) { state.modal = { kind: 'requestEmail', seed_id, lead_ids }; render(); }
+function previewIntro(lead_id) { state.modal = { kind: 'introEmail', lead_id }; render(); }
+function previewReminder(batch_id) { state.modal = { kind: 'reminderEmail', batch_id }; render(); }
+function closeModal() { state.modal = null; render(); }
+
+function modalLeadPicker(seed_id) {
+  const seed = getSeed(seed_id);
+  const last = seedLastAsked(seed_id);
+  const allLeads = leadsForSeed(seed_id)
+    .filter(l => l.status === 'Pending')
+    .filter(l => !(l.previously_declined_by || []).includes(seed_id))
+    .sort((a,b) => b.icp - a.icp);
+  if (!allLeads.length) {
+    return `
+      <div class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+        <div class="modal">
+          <div class="modal-header">
+            <div>
+              <h2>Outreach to ${seed.name}</h2>
+              <div class="modal-header-meta">No pending leads for this seed right now.</div>
+            </div>
+            <button class="btn ghost" onclick="closeModal()">×</button>
+          </div>
+          <div class="empty-state">All leads for ${seed.name} are either in flight, approved, declined, or already introduced.</div>
+        </div>
+      </div>
+    `;
+  }
+  if (!state.pickerIcpFilter) state.pickerIcpFilter = [5, 4, 3, 2, 1, 0];
+  const filterArr = state.pickerIcpFilter;
+  const q = (state.pickerQuery || '').toLowerCase().trim();
+  const leads = allLeads
+    .filter(l => filterArr.includes(l.icp))
+    .filter(l => !q ||
+        l.full_name.toLowerCase().includes(q) ||
+        (l.title || '').toLowerCase().includes(q) ||
+        (l.company || '').toLowerCase().includes(q));
+  const rows = leads.map(l => {
+    const checked = l.include_in_next_batch ? 'checked' : '';
+    return `
+      <tr>
+        <td><input type="checkbox" ${checked} onchange="toggleLead('${l.id}', this.checked)" /></td>
+        <td>
+          <div class="lead-name">${l.full_name}</div>
+          <div class="lead-title">${l.title}</div>
+        </td>
+        <td>${l.company}</td>
+        <td><span class="icp-pill icp-${l.icp}">ICP ${l.icp}</span></td>
+        <td>${l.tier}</td>
+        <td><input type="text" class="lead-context-input" value="${l.context || ''}" placeholder="Optional one-liner…" oninput="setLead('${l.id}',{context:this.value}); saveState()" /></td>
+      </tr>
+    `;
+  }).join('');
+  const tickedCount = allLeads.filter(l => l.include_in_next_batch).length;
+  return `
+    <div class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Outreach to ${seed.name}</h2>
+            <div class="modal-header-meta">Showing <strong>ALL ${allLeads.length}</strong> connections irrespective of ICP score · Last asked: ${last ? `${fmtDate(last)} (${daysAgo(last)}d ago)` : 'never'} · <strong>${tickedCount} ticked</strong></div>
+          </div>
+          <button class="btn ghost" onclick="closeModal()">×</button>
+        </div>
+        <div style="padding:12px 24px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--border);background:var(--bg)">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="picker-search" type="text" placeholder="Search by name, title, or company…" value="${q.replace(/"/g,'&quot;')}"
+              oninput="state.pickerQuery=this.value; render(); setTimeout(()=>{const el=document.getElementById('picker-search'); if(el){el.focus(); el.setSelectionRange(el.value.length,el.value.length);}},0)"
+              style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font:inherit" />
+            <button class="btn small primary" onclick="tickFiltered('${seed_id}')">Tick all visible</button>
+            <button class="btn small" onclick="untickAll('${seed_id}')">Untick all</button>
+            <span style="font-size:12px;color:var(--text-soft);min-width:80px;text-align:right">${leads.length} of ${allLeads.length}</span>
+          </div>
+          <div style="display:flex;gap:16px;align-items:center;font-size:13px;color:var(--text);flex-wrap:wrap">
+            <strong style="color:var(--text-muted)">Filter ICP:</strong>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <input type="checkbox" ${filterArr.length === 6 ? 'checked' : ''} onchange="toggleAllIcp(this.checked); render();" />
+              <span style="font-weight:600; font-size:12px;">All</span>
+            </label>
+            ${[5, 4, 3, 2, 1, 0].map(icp => `
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+                <input type="checkbox" ${filterArr.includes(icp) ? 'checked' : ''} onchange="toggleIcpFilter(${icp}, this.checked); render();" />
+                <span class="icp-pill icp-${icp}" style="font-size:11px;padding:2px 6px">ICP ${icp}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        <div class="modal-body">
+          <table class="leads-table">
+            <thead>
+              <tr><th></th><th>Lead</th><th>Company</th><th>ICP</th><th>Tier</th><th>Context (optional)</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <div class="footer-info">Untick anyone you don't want included. Ticked leads will appear in the request email.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn primary" onclick="onSendBatchClick('${seed_id}')" ${tickedCount===0?'disabled':''}>Send batch request →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleIcpFilter(icp, checked) {
+  if (!state.pickerIcpFilter) state.pickerIcpFilter = [5, 4, 3, 2, 1, 0];
+  if (checked && !state.pickerIcpFilter.includes(icp)) state.pickerIcpFilter.push(icp);
+  if (!checked) state.pickerIcpFilter = state.pickerIcpFilter.filter(x => x !== icp);
+}
+
+function toggleAllIcp(checked) {
+  state.pickerIcpFilter = checked ? [5, 4, 3, 2, 1, 0] : [];
+}
+
+function tickFiltered(seed_id) {
+  const filterArr = state.pickerIcpFilter || [5, 4, 3, 2, 1, 0];
+  const q = (state.pickerQuery || '').toLowerCase().trim();
+  const candidates = leadsForSeed(seed_id)
+    .filter(l => l.status === 'Pending' && !(l.previously_declined_by || []).includes(seed_id))
+    .filter(l => filterArr.includes(l.icp))
+    .filter(l => !q || l.full_name.toLowerCase().includes(q) || (l.title || '').toLowerCase().includes(q) || (l.company || '').toLowerCase().includes(q));
+    
+  candidates.forEach(l => setLead(l.id, { include_in_next_batch: true }));
+  saveState();
+  render();
+  toast(`Ticked ${candidates.length} currently visible leads.`);
+}
+
+function untickAll(seed_id) {
+  leadsForSeed(seed_id).forEach(l => setLead(l.id, { include_in_next_batch: false }));
+  saveState();
+  render();
+}
+
+function toggleLead(lead_id, checked) {
+  setLead(lead_id, { include_in_next_batch: checked });
+  saveState();
+  // re-render only the picker footer count, but easiest: full render
+  if (state.modal && state.modal.kind === 'leadPicker') render();
+}
+
+function onSendBatchClick(seed_id) {
+  const ticked = leadsForSeed(seed_id)
+    .filter(l => l.status === 'Pending' && l.include_in_next_batch && !(l.previously_declined_by || []).includes(seed_id));
+  openRequestEmail(seed_id, ticked.map(l => l.id));
+}
+
+function modalRequestEmail(seed_id, lead_ids) {
+  const seed = getSeed(seed_id);
+  const leads = lead_ids.map(getLead);
+  const email = renderRequestEmail(seed, leads);
+  return `
+    <div class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Request email preview</h2>
+            <div class="modal-header-meta">This is what would be drafted in Adam's Gmail.</div>
+          </div>
+          <button class="btn ghost" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="email-preview">
+            <div class="email-headers">
+              <div class="row"><span class="label">From</span><span class="val">${email.from}</span></div>
+              <div class="row"><span class="label">To</span><span class="val">${email.to}</span></div>
+              ${email.cc ? `<div class="row"><span class="label">Cc</span><span class="val">${email.cc}</span></div>` : ''}
+              <div class="row"><span class="label">Subject</span><span class="val">${email.subject}</span></div>
+            </div>
+            <div class="email-body">${email.body}</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="footer-info">In production: this draft is created in Adam's Gmail by n8n. Adam reviews + sends.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn primary" onclick="onConfirmSend('${seed_id}', ${JSON.stringify(lead_ids).replace(/"/g,'&quot;')})">Save as draft (simulated)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function onConfirmSend(seed_id, lead_ids) {
+  const ids = typeof lead_ids === 'string' ? JSON.parse(lead_ids.replace(/&quot;/g,'"')) : lead_ids;
+  
+  const seed = getSeed(seed_id);
+  const leads = ids.map(getLead);
+  const email = renderRequestEmail(seed, leads);
+  
+  try {
+    const res = await fetch('http://localhost:3000/api/create-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email.to,
+        cc: email.cc,
+        subject: email.subject,
+        body: email.body
+      })
+    });
+    
+    if (!res.ok) throw new Error('Failed to create draft');
+    
+    const batch = buildRequestBatch(seed_id, ids);
+    state.modal = null;
+    state.activeTab = 'inflight';
+    saveState();
+    sendToN8n('send-intro-request', { seed_id, lead_ids: ids, batch_id: batch.id });
+    toast(`Draft actually created in your Gmail for ${getSeed(seed_id).name}. ${ids.length} leads in the batch.`);
+    render();
+  } catch (err) {
+    console.error(err);
+    toast('Error creating draft. Ensure your email is connected.');
+  }
+}
+
+function modalReminderEmail(batch_id) {
+  const batch = state.batches.find(b => b.id === batch_id);
+  const seed = getSeed(batch.seed_id);
+  const email = renderReminderEmail(seed, batch);
+  return `
+    <div class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Reminder email preview · #${batch.reminder_count + 1}</h2>
+            <div class="modal-header-meta">Replies in the same Gmail thread as the original request.</div>
+          </div>
+          <button class="btn ghost" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="email-preview">
+            <div class="email-headers">
+              <div class="row"><span class="label">From</span><span class="val">${email.from}</span></div>
+              <div class="row"><span class="label">To</span><span class="val">${email.to}</span></div>
+              <div class="row"><span class="label">Subject</span><span class="val">${email.subject}</span></div>
+            </div>
+            <div class="email-body">${email.body}</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="footer-info">In production: Workflow D drafts this automatically every 7 days when no reply is detected.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn primary" onclick="onConfirmReminder('${batch_id}')">Save reminder draft (simulated)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function onConfirmReminder(batch_id) {
+  const batch = state.batches.find(b => b.id === batch_id);
+  const seed = getSeed(batch.seed_id);
+  const email = renderReminderEmail(seed, batch);
+
+  try {
+    const res = await fetch('http://localhost:3000/api/create-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email.to,
+        cc: email.cc,
+        subject: email.subject,
+        body: email.body
+      })
+    });
+    
+    if (!res.ok) throw new Error('Failed to create reminder draft');
+
+    batch.reminder_count += 1;
+    batch.last_contact_at = nowISO();
+    saveState();
+    state.modal = null;
+    sendToN8n('send-reminder', { batch_id, reminder_count: batch.reminder_count });
+    toast(`Reminder #${batch.reminder_count} actually drafted in Gmail.`);
+    render();
+  } catch (err) {
+    console.error(err);
+    toast('Error creating reminder draft. Ensure your email is connected.');
+  }
+}
+
+function modalIntroEmail(lead_id) {
+  const lead = getLead(lead_id);
+  const batch = state.batches.find(b => b.id === lead.current_batch);
+  const seed = batch ? getSeed(batch.seed_id) : getSeed(lead.primary_seed);
+  const email = renderIntroEmail(seed, lead);
+  return `
+    <div class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h2>Intro email preview</h2>
+            <div class="modal-header-meta">Drafted in Adam's Gmail, addressed to the seed (${seed.name}). Seed forwards to the lead.</div>
+          </div>
+          <button class="btn ghost" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="email-preview">
+            <div class="email-headers">
+              <div class="row"><span class="label">From</span><span class="val">${email.from}</span></div>
+              <div class="row"><span class="label">To</span><span class="val">${email.to}</span></div>
+              <div class="row"><span class="label">Subject</span><span class="val">${email.subject}</span></div>
+            </div>
+            <div class="email-body">${email.body}</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="footer-info">Adam reviews, edits if he wants, and sends to the seed.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn primary" onclick="onConfirmIntroDraft('${lead_id}')">Save intro draft (simulated)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function onConfirmIntroDraft(lead_id) {
+  const lead = getLead(lead_id);
+  const batch = state.batches.find(b => b.id === lead.current_batch);
+  const seed = batch ? getSeed(batch.seed_id) : getSeed(lead.primary_seed);
+  const email = renderIntroEmail(seed, lead);
+
+  try {
+    const res = await fetch('http://localhost:3000/api/create-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email.to,
+        cc: email.cc,
+        subject: email.subject,
+        body: email.body
+      })
+    });
+    
+    if (!res.ok) throw new Error('Failed to create intro draft');
+
+    buildIntroDraft(lead_id);
+    state.modal = null;
+    state.activeTab = 'approved';
+    saveState();
+    toast(`Intro draft actually saved in Gmail. Mark "Intro sent" once Adam sends.`);
+    render();
+  } catch (err) {
+    console.error(err);
+    toast('Error creating intro draft. Ensure your email is connected.');
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+fetchAirtableData();
+</script>
+</body>
+</html>
