@@ -128,20 +128,35 @@ app.post('/api/scan-inbox', async (req, res) => {
       const fromHeader = headers.find(h => h.name === 'From')?.value || '';
       const subject = headers.find(h => h.name === 'Subject')?.value || '';
       
-      // Extract plain text body
       let bodyText = '';
       if (payload.parts) {
-        const textPart = payload.parts.find(p => p.mimeType === 'text/plain');
-        if (textPart && textPart.body && textPart.body.data) {
-          bodyText = Buffer.from(textPart.body.data, 'base64').toString('utf-8');
-        }
+        // Look for text/plain in parts or sub-parts
+        const getText = (parts) => {
+          for (let p of parts) {
+            if (p.mimeType === 'text/plain' && p.body && p.body.data) return p.body.data;
+            if (p.parts) {
+              const res = getText(p.parts);
+              if (res) return res;
+            }
+          }
+          return null;
+        };
+        const raw = getText(payload.parts);
+        if (raw) bodyText = Buffer.from(raw, 'base64').toString('utf-8');
       } else if (payload.body && payload.body.data) {
         bodyText = Buffer.from(payload.body.data, 'base64').toString('utf-8');
       } else {
         bodyText = msgData.data.snippet; // Fallback to snippet
       }
 
-      const lowerBody = bodyText.toLowerCase();
+      // Strip quoted text from replies
+      let cleanBody = bodyText.split(/On .*?wrote:/i)[0]
+                              .split(/-----Original Message-----/i)[0]
+                              .split(/\r?\n>/)[0];
+                              
+      const lowerBody = cleanBody.toLowerCase();
+      console.log(`\n--- Email from ${fromHeader} ---`);
+      console.log(`Cleaned Body: "${lowerBody.trim()}"`);
 
       // Check against active batches
       for (const batch of activeBatches) {
